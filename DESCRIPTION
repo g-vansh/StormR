@@ -2,14 +2,21 @@ Package: StormR
 Title: R Package to Analyze Storm Data
 Version: 0.0.0.9000
 Authors@R: c(
-		person("Vansh", "Gupta", , "vg224@cornell.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6221-1247")),
-		person("Terrence", "Lim", , "ttl39@cornell.edu", role = c("aut", "cre")))
-Description: The package holds R functions to analyze storm and hurricane data in the US.
+    person("Vansh", "Gupta", , "vg224@cornell.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-6221-1247")),
+    person("Terrence", "Lim", , "ttl39@cornell.edu", role = c("aut", "cre"))
+  )
+Description: The package holds R functions to analyze storm and hurricane
+    data in the US.
 License: MIT + file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+Imports: 
+    maps,
+    sp
 Suggests: 
     knitr,
     rmarkdown
-VignetteBuilder: knitr
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3

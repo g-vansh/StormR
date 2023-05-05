@@ -4,13 +4,13 @@
 \alias{plot_storm_track}
 \title{Plot Storm Tracks}
 \usage{
-plot_storm_track(example_infile)
+plot_storm_track(df_list)
 }
 \arguments{
-\item{example_infile}{Describe Input}
+\item{df_list}{A list of data frames containing storm track data. Each data frame tracks one storm.}
 }
 \value{
-Describe Output
+A map of storm tracks.
 }
 \description{
 This function plots a map of storm tracks for a selection of storms.

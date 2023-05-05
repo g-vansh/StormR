@@ -4,13 +4,13 @@
 \alias{calculate_cyclone_energy}
 \title{Calculate the Accumulated Cyclone Energy of a Storm}
 \usage{
-calculate_cyclone_energy(example_infile)
+calculate_cyclone_energy(df)
 }
 \arguments{
-\item{example_infile}{Describe Input}
+\item{df}{A dataframe containing the storm data for a single storm.}
 }
 \value{
-Describe Output
+A numeric value representing the accumulated cyclone energy of the storm.
 }
 \description{
 This function computes the accumulated cyclone energy of a given storm.

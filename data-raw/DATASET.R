@@ -2,27 +2,76 @@ library(usethis)
 
 ## code to prepare `DATASET` dataset goes here
 
-# # EXAMPLE CODE:
-# page <- read_html("https://www.ssa.gov/oact/babynames/numberUSbirths.html")
-#
-# ssa <- page %>% html_nodes("table") %>% .[[2]] %>% html_table() %>% tbl_df()
-# names(ssa) <- c("year", "M", "F", "total")
-# ssa$total <- NULL
-#
-# ssa$M <- parse_number(ssa$M)
-# ssa$F <- parse_number(ssa$F)
-#
-# applicants <- ssa %>%
-#   gather(sex, n_all, M:F) %>%
-#   arrange(year, sex) %>%
-#   mutate(n_all = as.integer(n_all)) %>%
-#   arrange(year, sex)
-#
-# write_csv(applicants, "data-raw/applicants.csv")
-# usethis::use_data(applicants, overwrite = TRUE)
+dat <- read.csv("hurdat2-1851-2021-041922.txt", header= FALSE)
 
+#We will initialize the processed data 
+hurdat <- data.frame( matrix(NA, 0, ncol(dat)+2) )
+colnames(hurdat) <- c("StormID", "StormName", "Date", "Time", 
+                      "RecordIdentifier", "SystemStatus", "Latitude", 
+                      "Longitude", "MaximumWind", "MinimumPressure", "34NE", 
+                      "34SE", "34SW", "34NW", "50NE", "50SE", "50SW", 
+                      "50NW", "64NE", "64SE", "64SW", "64NW", "RadiusMaxWind")
+
+# counter for the row of hurdat
+k <- 0
+
+# loop over rows of raw dataset and extract the necessary data
+for(i in 1:nrow(dat)){
+  
+  # extract the current row of raw data
+  current_row <- dat[i,]
+  
+  # determine if this row is a StormID
+  if( grepl("[a-zA-Z]", current_row[1,1])){
+    # if so, update the storm_id and storm_name
+    storm_id <- current_row[1,1]
+    storm_name <- gsub("\\s+", "", current_row[1,2])
+    
+  } else {
+    
+    # otherwise update the counter because we are adding data to
+    # our processed hurdat data.frame. Then, write to the next row
+    k <- k + 1
+    hurdat[k,] <- cbind(storm_id, storm_name, current_row )
+  }
+}
+
+#We have now formatted the dataset into a data frame. We need to finish
+#cleaning up the data.
+
+#Replace missing value codes with NAs 
+for(row in 1:nrow(hurdat)){
+  for(column in 1:ncol(hurdat)){
+    if (is.na(hurdat[row, column]) | 
+        nchar(gsub("\\s", "", hurdat[row, column]))==0){
+      hurdat[row, column] <- NA 
+    }
+  }
+}
+
+#Convert latitude and longitude columns to degrees north and 
+#degrees east respectively.
+for(i in 1:nrow(hurdat)){
+  #Convert latitude to degrees north
+  current_latitude <- hurdat$Latitude[i]
+  if(grepl("S", current_latitude)){
+    new_latitude <- -1 * as.numeric(gsub("[A-Za-z]", "", current_latitude))
+  } else {
+    new_latitude <- as.numeric(gsub("[A-Za-z]", "", current_latitude))
+  }
+  hurdat$Latitude[i] <- new_latitude
+  
+  #Convert latitude to degrees east
+  current_longitude <- hurdat$Longitude[i]
+  if(grepl("W", current_longitude)){
+    new_longitude <- -1 * as.numeric(gsub("[A-Za-z]", "", current_longitude))
+  } else {
+    new_longitude <- as.numeric(gsub("[A-Za-z]", "", current_longitude))
+  }
+  hurdat$Longitude[i] <- new_longitude
+}
 
 # DO NOT DELETE THE LAST LINE, replace 'Dataset' with the dataset name
 # Rename this file to the name of the dataset
-write_csv(DATASET, "data-raw/DATASET.csv")
-usethis::use_data(DATASET, overwrite = TRUE)
+write.csv(hurdat, "DATASET.csv")
+usethis::use_data(hurdat, overwrite = TRUE)

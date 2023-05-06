@@ -4,13 +4,13 @@
 \alias{made_landfall_US}
 \title{Determine if the Storm Made Landfall in the United States}
 \usage{
-made_landfall_US(example_infile)
+made_landfall_US(df)
 }
 \arguments{
-\item{example_infile}{Describe Input}
+\item{df}{A dataframe containing the storm data for a single storm}
 }
 \value{
-Describe Output
+TRUE if the storm made landfall in the continental United States, FALSE otherwise
 }
 \description{
 A function for determining whether the storm made landfall in the

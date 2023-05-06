@@ -4,13 +4,13 @@
 \alias{interpolate_storm_track}
 \title{Interpolate Storm Track}
 \usage{
-interpolate_storm_track(example_infile)
+interpolate_storm_track(df)
 }
 \arguments{
-\item{example_infile}{Describe Input}
+\item{df}{Hurricane Dataset containing of a single storm track}
 }
 \value{
-Describe Output
+Updated Hurricane Dataset with 30 minute increments interpolated
 }
 \description{
 This function interpolates a storm track to 30 minute increments.

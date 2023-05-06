@@ -14,12 +14,17 @@ Imports:
     sp
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+<<<<<<< HEAD
 Depends: 
     R (>= 2.10)
 LazyData: true
+=======
+Config/testthat/edition: 3
+>>>>>>> e14029c4038a56726d36a49439e7ea91c35c7af6

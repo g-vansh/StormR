@@ -38,9 +38,13 @@ calculate_cyclone_energy <- function(df){
     # Loop through the 50 kt wind radii columns and sum their squares
     direction_list <- c("NE", "SE", "SW", "NW")
     for(i in 1:4){
+        energy_new <-
         energy_sum <- energy_sum + sum(df[ ,paste("50", direction_list[i], sep = "")]^2)
-        energy_sum <- energy_sum + sum(df[ ,paste("64", direction_list[i], sep = "")]^2)
     }
+    for(i in 1:4){
+      energy_sum <- energy_sum + sum(df[ ,paste("64", direction_list[i], sep = "")]^2)
+    }
+
 
     # Calculate the cyclone energy
     cyclone_energy <- energy_sum / 10000

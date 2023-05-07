@@ -1,6 +1,6 @@
 library(usethis)
 
-dat <- read.csv("data-raw/hurdat2-1851-2021-041922.txt", header= FALSE)
+dat <- read.csv("data-raw/hurdat-raw.txt", header= FALSE)
 
 # Convert the second column to string
 dat[,2] <- as.character(dat[,2])

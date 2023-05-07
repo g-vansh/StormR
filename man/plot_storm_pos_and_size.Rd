@@ -4,7 +4,7 @@
 \alias{plot_storm_pos_and_size}
 \title{Plot Storm Position and Size}
 \usage{
-plot_storm_pos_and_size(example_infile)
+plot_storm_pos_and_size(df)
 }
 \arguments{
 \item{example_infile}{Describe Input}

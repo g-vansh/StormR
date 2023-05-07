@@ -13,11 +13,20 @@ calculate_cyclone_energy <- function(df){
     # Get the date and time of the first observation
     first_time <- as.POSIXct(paste(toString(df$Date[1]), toString(df$Time[1]), sep = ""), format = "%Y%m%d%H%M")
 
-    # Add the first row to the dataframe
-    df_collapsed <- rbind(df_collapsed, data.frame(df[1,]))
+    # Create a list of maximum sustained wind every 6 hours (Use MaximumWind column)
+    max_winds <- list()
+
+    # Create a temporary 6 hour wind list
+    temp_winds <- list()
+
+    # Add the first wind speed to the temporary list
+    temp_winds <- c(temp_winds, df$MaximumWind[1])
 
     # Loop through each row, and keep only the times that are 6 hours apart
     for(i in 2:nrow(df)){
+
+        # Append information to temp_winds
+        temp_winds <- c(temp_winds, df$MaximumWind[i])
 
         # Get the date and time of the current observation
         current_time <- as.POSIXct(paste(toString(df$Date[i]), toString(df$Time[i]), sep = ""), format = "%Y%m%d%H%M")
@@ -27,24 +36,37 @@ calculate_cyclone_energy <- function(df){
 
         # If the time difference is a multiple of 6, keep the row
         if(time_diff >= 360){
-            df_collapsed <- rbind(df_collapsed, data.frame(df[i,]))
+            max_winds <- c(max_winds, max(unlist(temp_winds)))
+            temp_winds <- list()
             first_time <- current_time
+        } else if(i == nrow(df)){
+            max_winds <- c(max_winds, max(unlist(temp_winds)))
         }
+    }
+
+    # Keep only the max_winds that are greater than 34 knots
+    # Loop through each wind speed
+    for(i in 1:length(max_winds)){
+
+        # If the wind speed is less than 34 knots, set it to 0
+        if(max_winds[i] < 35){
+            max_winds[i] <- 0
+        }
+
     }
 
     # Initialise energy sum
     energy_sum <- 0
 
-    # Loop through the 50 kt wind radii columns and sum their squares
-    direction_list <- c("NE", "SE", "SW", "NW")
-    for(i in 1:4){
-        energy_new <-
-        energy_sum <- energy_sum + sum(df[ ,paste("50", direction_list[i], sep = "")]^2)
-    }
-    for(i in 1:4){
-      energy_sum <- energy_sum + sum(df[ ,paste("64", direction_list[i], sep = "")]^2)
-    }
+    # Loop through each wind speed
+    for(i in 1:length(max_winds)){
 
+        energy <- max_winds[[i]] ^ 2
+
+        # Add the energy to the energy sum
+        energy_sum <- energy_sum + energy
+
+    }
 
     # Calculate the cyclone energy
     cyclone_energy <- energy_sum / 10000
@@ -53,12 +75,3 @@ calculate_cyclone_energy <- function(df){
     return(cyclone_energy)
 
 }
-
-# Load the dataset
-load("data/hurdat.rda")
-
-# Subset hurdat to StormID AL012021
-hurdat <- hurdat[hurdat$StormID == "AL142016", ]
-
-# Calculate the cyclone energy
-cyclone_energy <- calculate_cyclone_energy(hurdat)

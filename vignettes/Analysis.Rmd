@@ -38,7 +38,7 @@ get_separated_storms <- function(df){
       #update current storm ID 
       current_storm_id <- df$StormID[i]
       #append old data frame to list_of_storms
-      list_of_storms <- append(list_of_storms, new_storm_dataframe)
+      list_of_storms <- append(list_of_storms, list(new_storm_dataframe))
       #update new data frame
       new_storm_dataframe <- df[i,]
     } else{
@@ -59,5 +59,28 @@ StormR::plot_storm_track(individual_storms_2020)
 StormR::plot_storm_track(individual_storms_2021)
 #Plot 2022 Storms
 StormR::plot_storm_track(individual_storms_2022) 
+```
+
+Problem 2
+```{r}
+#Cut dataframe to individual hurricanes for that year
+storm_data_2020 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2012" & hurdat$StormName == "SANDY",]
+storm_data_2021 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2021",]
+storm_data_2022 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2022",]
+
+
+```
+
+
+Problem 3
+Create a dataframe that has one row for each individual storm, with the following columns:
+- storm id
+- storm name
+- maximum wind speed
+- minimum pressure
+- indicator for whether it made landfall or not
+- accumulated cyclone energy
+```{r}
+
 ```
 

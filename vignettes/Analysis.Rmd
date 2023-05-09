@@ -18,46 +18,208 @@ knitr::opts_chunk$set(
 library(StormR)
 ```
 
-<!-- Problem 1  -->
-<!-- Plot the tracks of the storms in 2020, 2021, and 2022 in 3 separate plots. Your plots will be graded for -->
-<!-- how easy they are to decipher and how much information they display. Include, for example, some way -->
-<!-- to identify which storm each track belongs to. -->
-<!-- ```{r} -->
-<!-- #Cut dataframe to only storms for that year -->
-<!-- storm_data_2020 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2020",] -->
-<!-- storm_data_2021 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2021",] -->
-<!-- storm_data_2022 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2022",] -->
+Problem 1 
+Plot the tracks of the storms in 2020, 2021, and 2022 in 3 separate plots. Your plots will be graded for
+how easy they are to decipher and how much information they display. Include, for example, some way
+to identify which storm each track belongs to.
+```{r}
+#Cut dataframe to only storms for that year
+storm_data_2020 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2020",]
+storm_data_2021 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2021",]
+storm_data_2022 <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2022",]
 
-<!-- #Function to get a list of individual storms for that year  -->
-<!-- get_separated_storms <- function(df){ -->
-<!--   list_of_storms <- list() -->
-<!--   new_storm_dataframe <- df[1,] -->
-<!--   current_storm_id <- df$StormID[1] -->
-<!--   for(i in 2:nrow(df)){ -->
-<!--     if (df$StormID[i] != current_storm_id){ -->
-<!--       #update current storm ID  -->
-<!--       current_storm_id <- df$StormID[i] -->
-<!--       #append old data frame to list_of_storms -->
-<!--       list_of_storms <- append(list_of_storms, new_storm_dataframe) -->
-<!--       #update new data frame -->
-<!--       new_storm_dataframe <- df[i,] -->
-<!--     } else{ -->
-<!--       new_storm_dataframe <- rbind(new_storm_dataframe, df[i,]) -->
-<!--     } -->
-<!--   } -->
-<!--   return(list_of_storms) -->
-<!-- } -->
+#Function to get a list of individual storms for that year 
+get_separated_storms <- function(df){
+  list_of_storms <- list()
+  new_storm_dataframe <- df[1,]
+  current_storm_id <- df$StormID[1]
+  for(i in 2:nrow(df)){
+    if (df$StormID[i] != current_storm_id){
+      #update current storm ID 
+      current_storm_id <- df$StormID[i]
+      #append old data frame to list_of_storms
+      list_of_storms <- append(list_of_storms, list(new_storm_dataframe))
+      #update new data frame
+      new_storm_dataframe <- df[i,]
+    } else{
+      new_storm_dataframe <- rbind(new_storm_dataframe, df[i,])
+    }
+  }
+  return(list_of_storms)
+}
+  
+#List of individual storms for each year
+individual_storms_2020 <- get_separated_storms(storm_data_2020)
+individual_storms_2021 <- get_separated_storms(storm_data_2021)
+individual_storms_2022 <- get_separated_storms(storm_data_2022)
 
-<!-- #List of individual storms for each year -->
-<!-- individual_storms_2020 <- get_separated_storms(storm_data_2020) -->
-<!-- individual_storms_2021 <- get_separated_storms(storm_data_2021) -->
-<!-- individual_storms_2022 <- get_separated_storms(storm_data_2022) -->
+#Plot 2020 Storms
+StormR::plot_storm_track(individual_storms_2020)
+#Plot 2021 Storms
+StormR::plot_storm_track(individual_storms_2021)
+#Plot 2022 Storms
+StormR::plot_storm_track(individual_storms_2022) 
+```
 
-<!-- #Plot 2020 Storms -->
-<!-- StormR::plot_storm_track(individual_storms_2020) -->
-<!-- #Plot 2021 Storms -->
-<!-- StormR::plot_storm_track(individual_storms_2021) -->
-<!-- #Plot 2022 Storms -->
-<!-- StormR::plot_storm_track(individual_storms_2022)  -->
-<!-- ``` -->
+Problem 2
+```{r}
+#Cut dataframe to individual hurricanes for that year
+storm_data_Katrina <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2005" 
+                             & hurdat$StormName == "KATRINA",]
+storm_data_Sandy <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2012" 
+                           & hurdat$StormName == "SANDY",]
+storm_data_Harvey <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2017" 
+                            & hurdat$StormName == "HARVEY",]
+storm_data_Ian <- hurdat[substr(hurdat$Date, start=1, stop=4) == "2022" 
+                         & hurdat$StormName == "IAN",]
+
+made_landfall_frame <- function(df){
+  to_return <- data.frame()
+  for(i in 1:nrow(df)){
+    if(made_landfall_US(df[i,]) == TRUE){
+      to_return <- rbind(to_return, df[i,])
+    }
+  }
+  return(to_return)
+}
+
+landfall_Katrina <- made_landfall_frame(storm_data_Katrina)
+landfall_Sandy <- made_landfall_frame(storm_data_Sandy)
+landfall_Harvey <- made_landfall_frame(storm_data_Harvey)
+landfall_Ian <- made_landfall_frame(storm_data_Ian)
+
+pick_strongest <- function(df){
+  new_strongest <- df[df$MaximumWind == max(df$MaximumWind),]
+  if(nrow(new_strongest) == 1){
+    return(new_strongest)
+  }
+  #Eliminate rows where there's no data for maximum extent
+  to_return <- data.frame()
+  for (i in 1:nrow(new_strongest)){
+    if (new_strongest[i,]$`34NE` != -999){
+      to_return <- rbind(to_return, new_strongest[i,])
+    }
+  }
+  if(nrow(to_return) != 0){
+    return(to_return[1,])
+  }
+  return(new_strongest[1,])
+}
+
+strongest_Katrina <- pick_strongest(landfall_Katrina)
+strongest_Sandy <- pick_strongest(landfall_Sandy)
+strongest_Harvey <- pick_strongest(landfall_Harvey)
+strongest_Ian <- pick_strongest(landfall_Ian)
+
+all_together <- rbind(strongest_Katrina, strongest_Sandy, 
+                      strongest_Harvey, strongest_Ian)
+
+plot_storm_pos_and_size(strongest_Katrina)
+plot_storm_pos_and_size(strongest_Sandy)
+plot_storm_pos_and_size(strongest_Harvey)
+plot_storm_pos_and_size(strongest_Ian)
+plot_storm_pos_and_size(all_together)
+```
+
+
+Problem 3
+Create a dataframe that has one row for each individual storm, with the following columns:
+- storm id
+- storm name
+- maximum wind speed
+- minimum pressure
+- indicator for whether it made landfall or not
+- accumulated cyclone energy
+```{r}
+max_wind_speed <- function(df){
+  current_max <- df$MaximumWind[1]
+  if(nrow(df) == 1){
+    return(current_max)
+  }
+  for(i in 2:nrow(df)){
+    if(df$MaximumWind[i] > current_max){
+      current_max <- df$MaximumWind[i]
+    }
+  }
+  return(current_max)
+}
+
+minimum_pressure <- function(df){
+  current_min <- df$MinimumPressure[1]
+  if(nrow(df) == 1){
+    return(current_min)
+  }
+  for(i in 2:nrow(df)){
+    if(df$MinimumPressure[i] < current_min){
+      current_min <- df$MinimumPressure[i]
+    }
+  }
+  return(current_min)
+}
+
+list_of_storms <- split(hurdat, hurdat$StormID)
+new_data <- data.frame()
+for(i in 1:length(list_of_storms)){
+  storm_id <- list_of_storms[[i]]$StormID[1]
+  storm_name <- list_of_storms[[i]]$StormName[1]
+  max_wind <- max_wind_speed(list_of_storms[[i]])
+  min_pressure <- minimum_pressure(list_of_storms[[i]])
+  made_landfall <- made_landfall_US(list_of_storms[[i]])
+  cyclone <- calculate_cyclone_energy(list_of_storms[[i]])
+  
+  new_row <- data.frame(StormID = storm_id, StormName = storm_name,
+                        MaxWindSpeed = max_wind, MinimumPressure = min_pressure,
+                        MadeLandfall = made_landfall, 
+                        AccumulatedCycloneEnergy = cyclone)
+  new_data <- rbind(new_data, new_row)
+}
+
+head(new_data)
+```
+
+Problem 4
+Plots exploring interesting things in dataset 
+```{r}
+#Remove missing data
+plot_data <- subset(new_data, MaxWindSpeed != -999 & MinimumPressure != -999)
+
+#Draw Graphs
+plot(plot_data$MinimumPressure, plot_data$AccumulatedCycloneEnergy, 
+     xlab = "MinimumPressure", ylab = "Accumulated Cyclone Energy")
+abline(lm(AccumulatedCycloneEnergy ~ MinimumPressure, data = plot_data))
+plot(plot_data$MaxWindSpeed, plot_data$AccumulatedCycloneEnergy, 
+     xlab= "Maximum Wind Speed", ylab = "Accumulated Cyclone Energy")
+abline(lm(AccumulatedCycloneEnergy ~ MaxWindSpeed, data = plot_data))
+plot(plot_data$MaxWindSpeed, plot_data$MinimumPressure,
+     xlab = "Maximum Wind Speed", ylab = "Minimum Pressure")
+abline(lm(MinimumPressure ~ MaxWindSpeed, data = plot_data))
+
+#Other plots were tried that didn't seem as sensible
+#plot(new_data$MaxWindSpeed, new_data$MadeLandfall)
+#plot(new_data$MinimumPressure, new_data$MadeLandfall, xlim = c(850, 1000))
+#plot(new_data$MadeLandfall, new_data$AccumulatedCycloneEnergy)
+
+```
+
+In the above data, we used the dataset that we compiled in problem 3 and then
+conducted further analysis using plots as well as their regression lines. 
+
+From the first chart, we note that as the minimum pressure of a storm increases,
+the accumulated cyclone energy of the storm decreases in both expectation as
+well as variance. This suggests that when considering these two variables,
+the data is heteroskedastic as the variance of ACE is also dependent on 
+minimum pressure. Finally, the decreasing trend suggests that ACE and 
+minimum pressure are negatively correlated.
+
+In the second chart, we note that as the maximum wind speed increases, 
+the accumulated cyclone energy of the storm increases in both expectation
+as well as variance. This suggests that the data is heteroskedastic 
+meaning that as maximum wind speed increases, the variance of ACE also increases.
+Further, the increasing trend suggests that there is a positive correlation
+between maximum wind speed and accumulated cyclone energy.
+
+Finally, in the third chart, we note that as maximum wind speed increases,
+the minimum pressure has a downward trend. This suggests that there is a 
+negative correlation between maximum wind speed and accumulated cyclone energy.
+
 

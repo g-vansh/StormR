@@ -11,7 +11,10 @@ calculate_cyclone_energy <- function(df){
     df_collapsed <- data.frame()
 
     # Get the date and time of the first observation
-    first_time <- as.POSIXct(paste(toString(df$Date[1]), toString(df$Time[1]), sep = ""), format = "%Y%m%d%H%M")
+    first_time <- as.POSIXct(paste(toString(df$Date[1]),
+                                   toString(df$Time[1]),
+                                   sep = ""),
+                             format = "%Y%m%d%H%M")
 
     # Create a list of maximum sustained wind every 6 hours (Use MaximumWind column)
     max_winds <- list()
@@ -36,9 +39,13 @@ calculate_cyclone_energy <- function(df){
             temp_winds <- c(temp_winds, df$MaximumWind[i])
 
             # Get the date and time of the current observation
-            current_time <- as.POSIXct(paste(toString(df$Date[i]), toString(df$Time[i]), sep = ""), format = "%Y%m%d%H%M")
+            current_time <- as.POSIXct(paste(toString(df$Date[i]),
+                                             toString(df$Time[i]),
+                                             sep = ""),
+                                       format = "%Y%m%d%H%M")
 
-            # Calculate the time difference between the current observation and the first observation
+            # Calculate the time difference between the current observation
+            # and the first observation
             time_diff <- as.numeric(difftime(current_time, first_time, units = "mins"))
 
             # If time_diff is NA, set it to 0

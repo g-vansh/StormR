@@ -84,3 +84,6 @@ plot_storm <- function(df, longitude, latitude, maximum_extent){
   return(plot)
 }
 
+data <- hurdat[55825:55826,]
+plot_storm_pos_and_size(data)
+

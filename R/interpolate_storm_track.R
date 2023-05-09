@@ -6,6 +6,17 @@
 #' @return Updated Hurricane Dataset with 30 minute increments interpolated
 #' @export
 interpolate_storm_track <- function(df){
+    
+    # If the dataframe is empty, return the dataframe
+    if(nrow(df) == 0){
+        return(df)
+    }
+
+    # If the dataframe only has one row, return the dataframe
+    if(nrow(df) == 1){
+        return(df)
+    }
+
     # Create a new dataframe to store the interpolated data
     df_interpolated <- data.frame()
 

@@ -142,11 +142,16 @@ landfall_df <- aggregate(df$year, by = list(df$year), FUN = length)
 par(mfrow = c(2, 1))
 
 # Plot the yearly counts as a scatterplot
-plot(landfall_df$Group.1, landfall_df$x, xlab = "Year", ylab = "Number of Landfalling Hurricanes", main = "Number of Landfalling Hurricanes by Year")
+plot(landfall_df$Group.1, landfall_df$x, 
+     xlab = "Year", ylab = "Number of Landfalling Hurricanes", 
+     main = "Number of Landfalling Hurricanes by Year")
 
 # Plot a histogram of the yearly counts
-hist(landfall_df$x, xlab = "Number of Landfalling Hurricanes", ylab = "Frequency", main = "Histogram of Number of Landfalling Hurricanes by Year", breaks = seq(0, 14, 1), prob = TRUE)
-lines(0:max(landfall_df$x), dpois(0:max(landfall_df$x), mean(landfall_df$x)), col = 'red')
+hist(landfall_df$x, xlab = "Number of Landfalling Hurricanes", ylab = "Frequency",
+     main = "Histogram of Number of Landfalling Hurricanes by Year", 
+     breaks = seq(0, 14, 1), prob = TRUE)
+lines(0:max(landfall_df$x), dpois(0:max(landfall_df$x), mean(landfall_df$x)),
+      col = 'red')
 
 # Print the mean and variance of the yearly counts
 print(paste("Mean:", mean(landfall_df$x)))
@@ -166,16 +171,87 @@ summary(landfall_model)
 
 # Plot the model on a scatterplot of data
 par(mfrow = c(1, 1))
-plot(landfall_df$Year, landfall_df$Count, xlab = "Year", ylab = "Number of Landfalling Hurricanes", main = "Number of Landfalling Hurricanes by Year")
+plot(landfall_df$Year, landfall_df$Count, 
+     xlab = "Year", ylab = "Number of Landfalling Hurricanes", 
+     main = "Number of Landfalling Hurricanes by Year")
 
 # Add a regression line to the plot
 predProbs<-predict(landfall_model, data.frame(Year=seq(min(landfall_df$Year), max(landfall_df$Year), length.out=1000)), type="response")
-lines(seq(min(landfall_df$Year), max(landfall_df$Year), length.out=1000), predProbs, col=2, lwd=2)
+lines(seq(min(landfall_df$Year), max(landfall_df$Year), length.out=1000), 
+      predProbs, col=2, lwd=2)
 ```
 
 # Is the intensity of tropical cyclones increasing over time?
 
 In this question, we try to estimate the change in the intensity of tropical cyclones over time.
+Here, we will use the Hurdat dataset to answer this question. The Hurdat dataset contains
+information about all the hurricanes that have occurred in the Atlantic Ocean since 1851.
+
+Given the large heterogeneity in the intensity of tropical cyclones that occur each month, we will
+collapse the data to yearly counts, counting occurrences of each year. We will then plot the
+yearly counts as a scatterplot and a histogram. We do this to understand the distribution of
+the yearly counts.
+
+Per theory (that the intensity of tropical cyclones in a year is continuous data), we expect the
+distribution of the yearly counts to be normal. We can test this by observing the histogram of
+the yearly counts and comparing it to the normal distribution overlayed on the plot.
+
+Thus, we can conclude that the yearly counts are normally distributed. Given this information, we
+can fit a normal regression model to the data. We will use the year as the predictor variable
+and the yearly counts as the response variable. We will then plot the model on a scatterplot
+of the data.
+
+The normal regression model is a generalized linear model (GLM) that assumes the response
+variable is normally distributed. The normal distribution is a continuous probability distribution
+that expresses the probability density of a given number of events occurring in a fixed interval of time
+or space if these events occur with a known constant mean rate and independently of the time
+since the last event. The normal distribution can be used to model the intensity of tropical cyclones.
+
+The normal regression model specified in this question is as follows, where $Y_i$ is the intensity
+of tropical cyclones in year $i$, $X_i$ is the year, and $\mu_i$ is the mean intensity of tropical
+cyclones in year $i$:
+
+$$
+\begin{align}
+Y_i &\sim Normal(\mu_i, \sigma^2) \\
+\end{align}
+$$
+
+Thus, the mean of the normal distribution is $\mu_i$ and the variance of the normal distribution is $\sigma^2$.
+
+This is the parameter of interest. We want to estimate $\mu_i$ for each year $i$. We can do this by fitting a normal regression model
+to the data. The normal regression model is as follows:
+
+$$
+\begin{align}
+\mu_i &= \beta_0 + \beta_1 X_i
+\end{align}
+$$
+
+where $Y_i$ is the intensity of tropical cyclones in year $i$, $X_i$ is the year, and $\mu_i$ is
+the mean intensity of tropical cyclones in year $i$.
+
+The inference can be done by using the `summary()` function on the model. The `summary()` function
+will return the estimates of the parameters, the standard errors of the estimates, the t-statistics,
+and the p-values. The p-values are used to determine if the estimates are statistically significant.
+
+The model summary shows that the estimate of the intercept is `-7.794059` and the estimate of the
+slope is `0.008379`. The estimate of the intercept is the mean intensity of tropical cyclones in year 0.
+The estimate of the slope is the change in the mean intensity of tropical cyclones per year. 
+The standard error of the intercept is `13.760788` and the standard error of the slope is `0.007104`,
+both resulting in a p-value of greater than 0.1. Thus, we can conclude that the estimates are not
+statistically significant. 
+
+These estimates can be interpreted as follows. The estimate of the intercept is the mean intensity
+of tropical cyclones in year 0. The estimate of the slope is the change in the mean intensity of
+tropical cyclones per year. However, since the estimates are not statistically significant, we cannot
+interpret them. Thus, we cannot interpret the mean intensity of tropical cyclones in year 0 or the
+change in the mean intensity of tropical cyclones per year.
+
+Thus, we cannot conclude that the intensity of tropical cyclones is increasing over time. This
+conclusion is supported by the fact that the estimates of the intercept and slope are not statistically
+significant. Thus, we fail to reject our null hypothesis that the intensity of tropical cyclones is not
+increasing over time.
 
 ```{r}
 #############################################
@@ -184,14 +260,10 @@ In this question, we try to estimate the change in the intensity of tropical cyc
 
 # Split the dataframe into a list of dataframes where each dataframe is a unique StormID
 df <- StormR::hurdat
-df <- df[1:40, ]
-
 df_list <- split(df, df$StormID)
-df_list <- df_list[1:4]
 
 # Run the StormR::calculate_cyclone_energy() for each storm
 cyclone_energy_list <- lapply(df_list, StormR::calculate_cyclone_energy)
-cyclone_energy_list
 
 # Clean the dataset
 cyclone_energy_list <- unlist(cyclone_energy_list)
@@ -213,10 +285,130 @@ df <- df[, -2]
 
 par(mfrow = c(2, 1))
 
-# Plot the yearly counts as a scatterplot
-plot(df$year, df$CycloneEnergy, xlab = "Year", ylab = "Cyclone Energy", main = "Cyclone Energy by Year")
+# Aggregate the data at the year level
+df <- aggregate(df$CycloneEnergy, by = list(df$Year), FUN = mean)
+colnames(df) <- c("Year", "CycloneEnergy")
 
-# Plot a histogram of the yearly counts
-hist(df$CycloneEnergy, xlab = "Cyclone Energy", ylab = "Frequency", main = "Histogram of Cyclone Energy by Year", breaks = seq(0, 14, 1), prob = TRUE)
+# Plot the yearly counts as a scatterplot and a histogram
+plot(df$Year, df$CycloneEnergy, xlab = "Year", ylab = "Cyclone Energy",
+     main = "Cyclone Energy by Year")
+hist(df$CycloneEnergy, xlab = "Cyclone Energy", ylab = "Frequency",
+     main = "Histogram of Cyclone Energy by Year")
 
+# Mean and variance of the yearly counts
+print(paste("Mean:", mean(df$CycloneEnergy)))
+print(paste("Variance:", var(df$CycloneEnergy)))
+
+#############################################
+# Fitting a normal regression model
+#############################################
+
+# Clean the data for the model
+df$Year <- as.numeric(df$Year)
+
+# Run a normal regression model
+cyclone_energy_model <- lm(CycloneEnergy ~ Year, data = df)
+summary(cyclone_energy_model)
+
+# Plot the model on a scatterplot of data
+par(mfrow = c(1, 1))
+plot(df$Year, df$CycloneEnergy, xlab = "Year", ylab = "Cyclone Energy", 
+     main = "Cyclone Energy by Year")
+
+# Add a regression line to the plot
+abline(cyclone_energy_model, col = "red")
+```
+
+# Is the maximum wind speed of tropical cyclones increasing over time?
+
+We have seen that there exists no trend in the intensity of tropical cyclones over time. However,
+we have not yet investigated the maximum wind speed of tropical cyclones over time. Per this 
+WashingtonPost article (https://www.washingtonpost.com/climate-environment/interactive/2023/hurricane-risk-map-us-climate/),
+the maximum wind speed of tropical cyclones is increasing over time. Thus, we will investigate this
+claim.
+
+More specifically, we will control for system status (whether the tropical cyclone was a tropical
+depression, tropical storm, or hurricane) and investigate if the maximum wind speed of tropical
+cyclones is increasing over time across all systems. We will use the Hurdat dataset to answer this
+question. The Hurdat dataset contains information about all the hurricanes that have occurred in
+the Atlantic Ocean since 1851.
+
+We first start by running a linear regression model with the maximum wind speed as the response
+variable and the year as the predictor variable. We see that there exists a statistically significant
+positive relationship between the year and the maximum wind speed. However, we have not yet
+controlled for system status. It might be likely that this effect is not due to the maximum wind speed 
+of tropical cyclones increasing over time, but rather due to the fact that the proportion of hurricanes 
+and stronger storms has increased over time. Thus, we will control for system status.
+
+We then run a linear regression model with the maximum wind speed as the response variable, the
+year as the predictor variable, and fixed effects for system status. We see that there does not 
+exist a statistically significant relationship between the year and the maximum wind speed. Thus,
+we can conclude that the maximum wind speed of tropical cyclones is not increasing over time - instead 
+the proportion of hurricanes and stronger storms has increased over time.
+
+An assumption of this hypothesis is the some types of tropical storms have higher maximum wind
+speeds than others. Thus, we will investigate this assumption by regressing maximum wind speed
+on system status. We see that there exists a statistically significant relationship between system
+status and maximum wind speed. Thus, we can conclude that some types of tropical storms have
+higher maximum wind speeds than others.
+
+Finally, we visually confirm the hypothesis by plotting the distribution of system status by year
+for each system status level. We see that the proportion of hurricanes and stronger storms has
+increased over time. Thus, we can conclude that the proportion of hurricanes and stronger storms
+has increased over time.
+
+Thus, we can conclude that the maximum wind speed of tropical cyclones is not increasing over
+time - instead the proportion of hurricanes and stronger storms has increased over time. This
+does lead to an average increase in the maximum wind speed of tropical cyclones over time, as noted 
+by our linear regression model. Thus, as the WashingtonPost article notes, the maximum wind speed
+of tropical cyclones is increasing over time. However, this is not exactly true, as the maximum wind
+speed of tropical cyclones is not increasing over time when controlling for system status. Instead, 
+hurricanes which have higher maximum wind speeds are becoming more common over time.
+
+```{r}
+#############################################
+# Loading the data
+#############################################
+
+# Keep the StormID, Date, SystemStatus, and MaximumWind columns
+df <- StormR::hurdat[, c("StormID", "Date", "SystemStatus", "MaximumWind")]
+
+# Parse the date column as YYYYMMDD and create Month and Year columns
+df$Date <- as.Date(df$Date, format = "%Y%m%d")
+df$Month <- format(df$Date, "%m")
+df$Year <- format(df$Date, "%Y")
+df <- df[, -2]
+
+# Convert Year to numeric
+df$Year <- as.numeric(df$Year)
+df$SystemStatus <- gsub(" ", "", df$SystemStatus)
+df$SystemStatus <- as.factor(df$SystemStatus)
+
+#############################################
+# Conducting Analysis
+#############################################
+
+# Run a linear regression model
+library(lfe)
+model <- felm(MaximumWind ~ Year, data = df)
+summary(model)
+
+# Run a linear regression model with fixed effects for SystemStatus
+model <- felm(MaximumWind ~ Year | SystemStatus, data = df)
+summary(model)
+
+# Run a linear regression model with fixed effects
+model <- felm(MaximumWind ~ SystemStatus, data = df)
+summary(model)
+
+# Plot 8 plots in a 4x2 grid, 
+# showing the histogram distribution of SystemStatus by Year
+# for 8 SystemStatus levels at the same axis
+par(mfrow = c(4, 2))
+for (i in 1:8) {
+  hist(df[df$SystemStatus == levels(df$SystemStatus)[i], ]$Year, 
+       xlab = "Year", ylab = "Frequency", 
+       main = paste("Histogram of", levels(df$SystemStatus)[i], "by Year"), 
+       breaks = seq(1850, 2025, 5), prob = TRUE, xlim = c(1850, 2050))
+}
 ```

@@ -5,10 +5,10 @@ test_that("A plot is returned for a storm track (AL011851)", {
   expect_s3_class(plot_storm_track(hurdat), "gg")
 })
 
-test_that("A plot is returned for all storm tracks", {
+test_that("A plot is returned for 4 storm tracks", {
   hurdat <- StormR::hurdat
-  # Filter for AL012022
-  hurdat <- subset(hurdat, StormID == "AL012022")
+  # Subset to the first 50 rows
+  hurdat <- hurdat[1:50,]
   expect_s3_class(plot_storm_track(hurdat), "gg")
 })
 

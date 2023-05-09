@@ -1,10 +1,10 @@
 #' Plot Storm Position and Size
 #'
 #' A function to plot a map of the position and size of a given storm.
-#' The 34, 50, and 64 knot extent variables.
+#' We use the 34, 50, and 64 knot extent variables to do so.
 #'
-#' @param df
-#' @return ggplot
+#' @param df A dataframe containing information about storms
+#' @return ggplot object of the storm position and size mapped onto a world map.
 #' @export
 plot_storm_pos_and_size <- function(df){
 
@@ -30,13 +30,16 @@ plot_storm <- function(df, longitude, latitude, maximum_extent){
   library(maps)
   library(ggplot2)
   library(ggforce)
-  
+
   # Convert Latitude and Longitude to numeric
   df$Latitude <- as.numeric(df$Latitude)
   df$Longitude <- as.numeric(df$Longitude)
 
   # Get country boundaries
+  world <- ggplot2::map_data("world")
+
   # Get state boundaries
+  states <- ggplot2::map_data("state")
 
   # Plot the map
   plot <- ggplot() +
@@ -80,7 +83,3 @@ plot_storm <- function(df, longitude, latitude, maximum_extent){
 
   return(plot)
 }
-
-data <- hurdat[55825:55826,]
-plot_storm_pos_and_size(data)
-

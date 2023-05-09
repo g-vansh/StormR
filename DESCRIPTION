@@ -10,7 +10,10 @@ Description: The package holds R functions to analyze storm and hurricane
     data in the US.
 License: MIT + file LICENSE
 Imports: 
+    ggforce,
+    ggplot2,
     maps,
+    maptools,
     sp
 Suggests: 
     knitr,

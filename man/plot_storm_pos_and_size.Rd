@@ -7,12 +7,12 @@
 plot_storm_pos_and_size(df)
 }
 \arguments{
-\item{example_infile}{Describe Input}
+\item{df}{A dataframe containing information about storms}
 }
 \value{
-Describe Output
+ggplot object of the storm position and size mapped onto a world map.
 }
 \description{
 A function to plot a map of the position and size of a given storm.
-The 34, 50, and 64 knot extent variables.
+We use the 34, 50, and 64 knot extent variables to do so.
 }

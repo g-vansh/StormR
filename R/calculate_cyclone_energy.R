@@ -22,25 +22,38 @@ calculate_cyclone_energy <- function(df){
     # Add the first wind speed to the temporary list
     temp_winds <- c(temp_winds, df$MaximumWind[1])
 
-    # Loop through each row, and keep only the times that are 6 hours apart
-    for(i in 2:nrow(df)){
+    # If df only has one row, max_winds is temp_winds
+    if(nrow(df) == 1){
 
-        # Append information to temp_winds
-        temp_winds <- c(temp_winds, df$MaximumWind[i])
+        max_winds <- temp_winds
 
-        # Get the date and time of the current observation
-        current_time <- as.POSIXct(paste(toString(df$Date[i]), toString(df$Time[i]), sep = ""), format = "%Y%m%d%H%M")
+    } else {
 
-        # Calculate the time difference between the current observation and the first observation
-        time_diff <- as.numeric(difftime(current_time, first_time, units = "mins"))
+        # Loop through each row, and keep only the times that are 6 hours apart
+        for(i in 2:nrow(df)){
 
-        # If the time difference is a multiple of 6, keep the row
-        if(time_diff >= 360){
-            max_winds <- c(max_winds, max(unlist(temp_winds)))
-            temp_winds <- list()
-            first_time <- current_time
-        } else if(i == nrow(df)){
-            max_winds <- c(max_winds, max(unlist(temp_winds)))
+            # Append information to temp_winds
+            temp_winds <- c(temp_winds, df$MaximumWind[i])
+
+            # Get the date and time of the current observation
+            current_time <- as.POSIXct(paste(toString(df$Date[i]), toString(df$Time[i]), sep = ""), format = "%Y%m%d%H%M")
+
+            # Calculate the time difference between the current observation and the first observation
+            time_diff <- as.numeric(difftime(current_time, first_time, units = "mins"))
+
+            # If time_diff is NA, set it to 0
+            if(is.na(time_diff)){
+                time_diff <- 0
+            }
+
+            # If the time difference is a multiple of 6, keep the row
+            if(time_diff >= 360){
+                max_winds <- c(max_winds, max(unlist(temp_winds)))
+                temp_winds <- list()
+                first_time <- current_time
+            } else if(i == nrow(df)){
+                max_winds <- c(max_winds, max(unlist(temp_winds)))
+            }
         }
     }
 

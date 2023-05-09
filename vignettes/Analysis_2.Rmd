@@ -1,0 +1,222 @@
+---
+title: "Analysis_2"
+output: 
+  rmarkdown::html_vignette:
+    fig_height: 7
+    fig_width: 7
+vignette: >
+  %\VignetteIndexEntry{Analysis_2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(StormR)
+
+# Set Graphics
+par(mfrow = c(1, 1))
+```
+
+# Is the number of landfalling hurricanes increasing over time? 
+
+In this question, we try to estimate the change in the number of landfalling hurricanes over time.
+Here, we will use the Hurdat dataset to answer this question. The Hurdat dataset contains
+information about all the hurricanes that have occurred in the Atlantic Ocean since 1851. 
+
+Given the large heterogeneity in the number of hurricanes that occur each month, we will
+collapse the data to yearly counts, counting occurrences of each year. We will then plot the
+yearly counts as a scatterplot and a histogram. We do this to understand the distribution of
+the yearly counts. 
+
+Per theory (that the number of hurricane landfalls in a year is count data), we expect the
+distribution of the yearly counts to be Poisson. We can test this by observing the histogram
+of the yearly counts and comparing it to the Poisson distribution overlayed on the plot. We also note that the
+mean and variance of the yearly counts are similar, as theory predicts.
+
+Thus, we can conclude that the yearly counts are Poisson distributed. Given this information, we
+can fit a Poisson regression model to the data. We will use the year as the predictor variable
+and the yearly counts as the response variable. We will then plot the model on a scatterplot
+of the data. 
+
+The Poisson regression model is a generalized linear model (GLM) that assumes the response
+variable is Poisson distributed. The Poisson distribution is a discrete probability distribution
+that expresses the probability of a given number of events occurring in a fixed interval of time
+or space if these events occur with a known constant mean rate and independently of the time
+since the last event. The Poisson distribution can be used to model the number of events
+occurring in a given time interval.
+
+The Poisson regression model specified in this question is as follows, where $Y_i$ is the number
+of landfalling hurricanes in year $i$, $X_i$ is the year, and $\lambda_i$ is the mean number of
+landfalling hurricanes in year $i$: 
+
+$$
+\begin{align}
+Y_i &\sim Poisson(\lambda_i) \\
+\end{align}
+$$
+
+Thus, the mean of the Poisson distribution is $\lambda_i$. This is the parameter of interest. We
+want to estimate $\lambda_i$ for each year $i$. We can do this by fitting a Poisson regression model
+to the data. The Poisson regression model is as follows:
+
+$$
+\begin{align}
+log(\lambda_i) &= \beta_0 + \beta_1 X_i
+\end{align}
+$$
+
+where $Y_i$ is the number of landfalling hurricanes in year $i$, $X_i$ is the year, and $\lambda_i$ is 
+the mean number of landfalling hurricanes in year $i$.
+
+The inference can be done by using the `summary()` function on the model. The `summary()` function
+will return the estimates of the parameters, the standard errors of the estimates, the z-statistics,
+and the p-values. The p-values are used to determine if the estimates are statistically significant.
+
+The model summary shows that the estimate of the intercept is `-4.4347989` and the estimate of the
+slope is `0.0029601`. The estimate of the intercept is the log of the mean number of landfalling
+hurricanes in year 0. The estimate of the slope is the log of the change in the mean number of
+landfalling hurricanes per year. The standard error of the intercept is `1.6076714` and the standard
+error of the slope is `0.0008266`, both resulting in a p-value of less than 0.01. Thus, we can
+conclude that the estimates are statistically significant.
+
+These estimates can be interpreted as follows. The estimate of the intercept is the log of the mean
+number of landfalling hurricanes in year 0. The estimate of the slope is the log of the change in
+the mean number of landfalling hurricanes per year. Thus, the mean number of landfalling
+hurricanes in year 1851 is $e^{-4.4347989 + 0.0029601 * 1851} = 2.8415$. The mean number of
+landfalling hurricanes in year 2022 is $e^{-4.4347989 + 0.0029601 * 2022} = 4.7139$. Thus, the
+mean number of landfalling hurricanes has increased by $4.7139 - 2.8415 = 1.8724$ hurricanes
+over the past 171 years. This represents a staggering 65.9% increase in the mean number of
+landfalling hurricanes over the past 171 years.
+
+Thus, we can conclude that the number of landfalling hurricanes is increasing over time. This
+conclusion is supported by the fact that the mean number of landfalling hurricanes has increased
+by 65.9% over the past 171 years. This conclusion is also supported by the fact that the estimate
+of the slope (the log of the change in the mean number of landfalling hurricanes per year) is 
+positive and statistically significant.
+
+```{r}
+#############################################
+# Loading the data
+#############################################
+
+# Split the dataframe into a list of dataframes where each dataframe is a unique StormID
+df <- StormR::hurdat
+df_list <- split(df, df$StormID)
+
+# Run the StormR::made_landfall_US() for each storm
+landfall_index_list <- lapply(df_list, StormR::made_landfall_US)
+
+# Clean the dataset
+landfall_index_list <- unlist(landfall_index_list)
+landfall_list <- df_list[landfall_index_list]
+landfall_list <- lapply(landfall_list, function(x) x[, c("StormID", "Date")])
+landfall_list <- lapply(landfall_list, function(x) x[!duplicated(x$StormID), ])
+
+# Parse the date column as YYYYMMDD and create Month and Year columns
+landfall_list <- lapply(landfall_list, function(x) {
+  x$Date <- as.Date(x$Date, format = "%Y%m%d")
+  x$month <- format(x$Date, "%m")
+  x$year <- format(x$Date, "%Y")
+  x
+})
+
+# Compile the cleaned data into a single dataframe
+landfall_list <- lapply(landfall_list, function(x) x[, -2])
+df <- do.call(rbind, landfall_list)
+rownames(df) <- NULL
+
+# Collapse the data to yearly counts, counting occurrences of each year using aggregate()
+landfall_df <- aggregate(df$year, by = list(df$year), FUN = length)
+
+#############################################
+# Conducting preliminary analysis and EDA
+#############################################
+
+par(mfrow = c(2, 1))
+
+# Plot the yearly counts as a scatterplot
+plot(landfall_df$Group.1, landfall_df$x, xlab = "Year", ylab = "Number of Landfalling Hurricanes", main = "Number of Landfalling Hurricanes by Year")
+
+# Plot a histogram of the yearly counts
+hist(landfall_df$x, xlab = "Number of Landfalling Hurricanes", ylab = "Frequency", main = "Histogram of Number of Landfalling Hurricanes by Year", breaks = seq(0, 14, 1), prob = TRUE)
+lines(0:max(landfall_df$x), dpois(0:max(landfall_df$x), mean(landfall_df$x)), col = 'red')
+
+# Print the mean and variance of the yearly counts
+print(paste("Mean:", mean(landfall_df$x)))
+print(paste("Variance:", var(landfall_df$x)))
+
+#############################################
+# Fitting a Poisson regression model
+#############################################
+
+# Clean the data for the model
+colnames(landfall_df) <- c("Year", "Count")
+landfall_df$Year <- as.numeric(landfall_df$Year)
+
+# Run a poisson regression model
+landfall_model <- glm(Count ~ Year, data = landfall_df, family = "poisson")
+summary(landfall_model)
+
+# Plot the model on a scatterplot of data
+par(mfrow = c(1, 1))
+plot(landfall_df$Year, landfall_df$Count, xlab = "Year", ylab = "Number of Landfalling Hurricanes", main = "Number of Landfalling Hurricanes by Year")
+
+# Add a regression line to the plot
+predProbs<-predict(landfall_model, data.frame(Year=seq(min(landfall_df$Year), max(landfall_df$Year), length.out=1000)), type="response")
+lines(seq(min(landfall_df$Year), max(landfall_df$Year), length.out=1000), predProbs, col=2, lwd=2)
+```
+
+# Is the intensity of tropical cyclones increasing over time?
+
+In this question, we try to estimate the change in the intensity of tropical cyclones over time.
+
+```{r}
+#############################################
+# Loading the data
+#############################################
+
+# Split the dataframe into a list of dataframes where each dataframe is a unique StormID
+df <- StormR::hurdat
+df <- df[1:40, ]
+
+df_list <- split(df, df$StormID)
+df_list <- df_list[1:4]
+
+# Run the StormR::calculate_cyclone_energy() for each storm
+cyclone_energy_list <- lapply(df_list, StormR::calculate_cyclone_energy)
+cyclone_energy_list
+
+# Clean the dataset
+cyclone_energy_list <- unlist(cyclone_energy_list)
+df <- df[!duplicated(df$StormID), ]
+df <- df[, c("StormID", "Date")]
+df <- cbind(df, cyclone_energy_list)
+colnames(df) <- c("StormID", "Date", "CycloneEnergy")
+rownames(df) <- NULL
+
+# Parse the date column as YYYYMMDD and create Month and Year columns
+df$Date <- as.Date(df$Date, format = "%Y%m%d")
+df$Month <- format(df$Date, "%m")
+df$Year <- format(df$Date, "%Y")
+df <- df[, -2]
+
+#############################################
+# Conducting preliminary analysis and EDA
+#############################################
+
+par(mfrow = c(2, 1))
+
+# Plot the yearly counts as a scatterplot
+plot(df$year, df$CycloneEnergy, xlab = "Year", ylab = "Cyclone Energy", main = "Cyclone Energy by Year")
+
+# Plot a histogram of the yearly counts
+hist(df$CycloneEnergy, xlab = "Cyclone Energy", ylab = "Frequency", main = "Histogram of Cyclone Energy by Year", breaks = seq(0, 14, 1), prob = TRUE)
+
+```
